@@ -1,22 +1,32 @@
-## Module 2: Subqueries & Advanced Joins (The "Complex Questions")
+# Module 2: Subqueries & Advanced Joins (The "Complex Questions")
 
-**Client Request:** "We need to dig deeper into our data. I want to know which workers have a specific skill, and I want to find our 'all-star' projects—the ones with the most workers assigned."
+## **Client Request**
+> "We need to dig deeper into our data. I want to know which workers have a specific skill, and I want to find our 'all-star' projects—the ones with the most workers assigned."
 
-### Part 2A: Guided Activity (Subqueries in WHERE and FROM)
+---
 
-**Concept:** A Subquery is a SELECT statement nested inside another statement. It's incredibly powerful for answering multi-part questions.
+## **Part 2A: Guided Activity (Subqueries in WHERE and FROM)**
 
-**Guide:** Let's find all workers who have the skill 'Heavy Equipment Operation' (or another skill from your skills table).
+**Concept:**  
+A **Subquery** is a `SELECT` statement nested inside another statement. It's powerful for answering multi-part questions.
+
+**Guide:**  
+We want to find all workers who have the skill **'Heavy Equipment Operation'** (or any other skill in your skills table).
 
 **Multi-Step Logic:**
-1. First, we need the `skill_id` for 'Heavy Equipment Operation'.
-2. Then, we need all `worker_ids` from `worker_skills` that have that `skill_id`.
-3. Finally, we need the worker details from the `workers` table.
 
-**Implementation:** We can combine this with subqueries. (Assuming your tables are named `workers`, `worker_skills`, and `skills` as per the ERD).
+1. Get the `skill_id` for **'Heavy Equipment Operation'**.  
+2. Get all `worker_id`s from `worker_skills` that have that `skill_id`.  
+3. Fetch the worker details from the `workers` table.
+
+**Implementation in `02_subqueries.sql`:**
+
+- **Subquery version:** Uses a nested `SELECT` in the `WHERE` clause.  
+- **JOIN version:** Uses `JOIN`s between `workers`, `worker_skills`, and `skills` for better performance.
 
 ```sql
--- Using a subquery in the WHERE clause
+
+-- Subquery version
 SELECT first_name, last_name, phone
 FROM workers
 WHERE worker_id IN (
@@ -27,22 +37,46 @@ WHERE worker_id IN (
     )
 );
 
--- This can also be done with JOINs, which is often more performant
+-- JOIN version 
 SELECT w.first_name, w.last_name, w.phone
 FROM workers w
 JOIN worker_skills ws ON w.worker_id = ws.worker_id
 JOIN skills s ON ws.skill_id = s.skill_id
 WHERE s.skill_name = 'Heavy Equipment Operation';
-```
 
-**Task:** Add both of these query variations to your `02_subqueries.sql` file.
 
-### Part 2B: Challenge Task (Subquery with Aggregation)
 
-The client wants to find the project(s) with the highest number of assigned workers. This is a common "max of a count" problem.
+Objective:
+Find the project(s) with the highest number of assigned workers. This is a "max of a count" problem.
 
-**Task:** Write a single SQL query to find the `project_name` and the `worker_count` for the project(s) with the most workers. (Hint: This often involves a subquery in the FROM or HAVING clause. You'll need to join `projects` and `project_assignments`).
+Implementation in 02_subqueries.sql:
 
-**Deliverable:** Add this complex query to your `02_subqueries.sql` file.
+Uses COUNT() to count workers per project.
 
----
+Uses a nested subquery in HAVING to get the maximum worker count.
+
+Returns both project_name and worker_count for all projects that tie for the most workers.
+
+SELECT p.project_name, COUNT(pa.worker_id) AS worker_count
+FROM projects p
+JOIN project_assignments pa ON p.project_id = pa.project_id
+GROUP BY p.project_name
+HAVING COUNT(pa.worker_id) = (
+    SELECT MAX(worker_count) FROM (
+        SELECT COUNT(worker_id) AS worker_count
+        FROM project_assignments
+        GROUP BY project_id
+    ) AS subquery_max
+);
+
+
+
+Open 02_subqueries.sql in your SQL client.
+
+Run the queries as-is to see results.
+
+Modify the skill name in Part 2A to test different skills.
+
+The queries return live results based on your current database content.
+
+
