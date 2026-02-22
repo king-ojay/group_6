@@ -70,3 +70,33 @@ This is the safety rule. This is a complex but realistic challenge.
 - In your `README.md`, add a section for "Module 5 Challenge" and explain how you tested your trigger (e.g., "First, I manually set a worker's 'Basic Safety' cert to be expired. Then I tried to assign them to a project, and the INSERT failed as expected.")
 
 ---
+
+
+## Module 5 Challenge - Testing Steps
+
+### Testing the Safety Certification Validation Trigger
+
+**Test Case 1: Expired Certification**
+1. Updated a worker's 'Basic Safety' certification to have an expiry date in the past:
+   ```sql
+   UPDATE certifications 
+   SET expiry_date = '2020-01-01' 
+   WHERE worker_id = 1 AND cert_name = 'Basic Safety';
+   ```
+2. Attempted to assign that worker to a project:
+   ```sql
+   INSERT INTO project_assignments (worker_id, project_id, assignment_date)
+   VALUES (1, 'P002', CURDATE());
+   ```
+3. Result: The INSERT was blocked with error message "Worker safety certification is expired or missing."
+
+**Test Case 2: Missing Certification**
+1. Attempted to assign a worker who has no 'Basic Safety' certification to a project
+2. Result: The INSERT was blocked with the same error message
+
+**Test Case 3: Valid Certification**
+1. Ensured a worker has a valid 'Basic Safety' certification with future expiry date
+2. Successfully assigned the worker to a project
+3. Result: The INSERT completed successfully
+
+The trigger correctly enforces the safety rule by preventing assignments when certifications are expired or missing.

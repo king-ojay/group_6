@@ -44,3 +44,48 @@ Create an EVENT named `ev_archive_old_projects`.
 - In your `README.md`, add a "Module 6 Challenge" section and explain how you would test this event safely without waiting a month. (Hint: You could temporarily change the schedule to `EVERY 1 MINUTE` or `AT CURRENT_TIMESTAMP + INTERVAL 5 SECOND`, or DISABLE the event and run its logic manually).
 
 ---
+
+
+## Module 6 Challenge - Event Schedule and Transaction Logic
+
+### Event Schedule Explanation
+
+The event is scheduled to run `EVERY 1 MONTH` starting one month from creation. This monthly schedule is appropriate because:
+- Archival is not time-critical and doesn't need to run daily
+- Monthly execution minimizes database overhead
+- It aligns with typical business reporting cycles
+
+The `STARTS CURRENT_TIMESTAMP + INTERVAL 1 MONTH` ensures the first execution happens one month after creation, giving time to verify the event is configured correctly.
+
+### Transaction Logic Explanation
+
+The event uses a transaction (`START TRANSACTION` and `COMMIT`) to ensure data integrity:
+
+1. **Atomicity**: Both the INSERT and DELETE operations succeed together or fail together. If the DELETE fails after INSERT, the transaction rolls back, preventing duplicate records.
+
+2. **Consistency**: Projects are never lost - they're safely copied to the archive before deletion from the active table.
+
+3. **The 5-Year Rule**: The WHERE clause `end_date < CURDATE() - INTERVAL 5 YEAR` ensures only completed projects older than 5 years are archived, keeping recent project data readily accessible.
+
+### Testing Strategy
+
+To test this event without waiting a month:
+
+**Option 1: Temporary Schedule Change**
+```sql
+ALTER EVENT ev_archive_old_projects
+ON SCHEDULE EVERY 1 MINUTE;
+```
+
+**Option 2: Manual Execution**
+Run the event's logic directly:
+```sql
+START TRANSACTION;
+INSERT INTO archived_projects (...)
+SELECT ... FROM projects WHERE end_date < CURDATE() - INTERVAL 5 YEAR;
+DELETE FROM projects WHERE end_date < CURDATE() - INTERVAL 5 YEAR;
+COMMIT;
+```
+
+**Option 3: Test Data**
+Create a test project with `end_date = '2018-01-01'` and verify it gets archived when the event runs.
