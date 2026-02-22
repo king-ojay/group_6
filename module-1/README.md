@@ -1,45 +1,106 @@
-## Module 1: Indexes (The "Need for Speed")
+Module 1: Indexes (The "Need for Speed")
+Client Request
 
-**Client Request:** "Our project managers are complaining that the application is slow. Specifically, searching for a worker by their last name takes way too long, as does finding projects in a specific city. We need to speed this up!"
+The project managers reported that searching for workers by last name and filtering projects by city was slow. The goal was to optimize these frequent queries to improve application performance.
 
-### Part 1A: Guided Activity (Creating a Simple Index)
+Part 1A – Simple Index on workers(last_name)
+Analysis (Before Index)
 
-**Concept:** An Index is a data structure (like an index in a book) that speeds up data retrieval on a table. It's essential for columns used frequently in WHERE clauses.
+To evaluate performance, the following query was analyzed:
 
-**Guide:** Let's analyze the "search by last name" problem.
-
-1. **Analyze:** First, let's see why it's slow. Run this query in your client (in DataGrip, you can use the "Explain Plan" feature).
-
-```sql
 EXPLAIN SELECT * FROM workers WHERE last_name = 'Johnson';
-```
 
-Note the `type` (likely `ALL`) and `rows` (likely the full table count). This indicates a full table scan.
+Before creating the index:
 
-2. **Implement:** Now, let's create an index to fix it.
+type was ALL
 
-```sql
-CREATE INDEX idx_worker_lastname ON workers(last_name);
-```
+key was NULL
 
-3. **Verify:** Run the EXPLAIN query again.
+rows showed a large number (full table scan)
 
-```sql
+This indicates that MySQL was scanning the entire workers table to find matching records.
+
+Implementation
+
+To optimize this, the following index was created:
+
+CREATE INDEX idx_worker_lastname 
+ON workers(last_name);
+Verification (After Index)
+
+After creating the index, the EXPLAIN query was run again:
+
 EXPLAIN SELECT * FROM workers WHERE last_name = 'Johnson';
-```
 
-You should now see the `type` as `ref` and a much smaller `rows` count. The `key` should be `idx_worker_lastname`. It's now using the index!
+Now:
 
-**Task:** Add the EXPLAIN (before and after) and the CREATE INDEX statements to your `01_indexes.sql` file, separated by comments.
+type changed to ref
 
-### Part 1B: Challenge Task (Creating a Composite Index)
+key became idx_worker_lastname
 
-The second request was about finding projects by city. After talking with the client, you learn they almost always search by `site_city` and then sort by `start_date`.
+rows significantly decreased
 
-**Task:** Create an optimal composite index on the `projects` table to speed up this common query.
+This confirms that MySQL is now using the index instead of performing a full table scan.
 
-**Deliverable:**
-- Add your CREATE INDEX statement to `01_indexes.sql`.
-- In your `README.md`, add a section for "Module 1 Challenge" and justify your index. Why did you choose the columns in that specific order?
+Part 1B – Challenge: Composite Index on projects
+Business Requirement
 
----
+The client frequently runs queries that:
+
+Filter projects by site_city
+
+Sort results by start_date
+
+Typical query:
+
+SELECT * 
+FROM projects
+WHERE site_city = 'Kigali'
+ORDER BY start_date;
+Solution Implemented
+CREATE INDEX idx_projects_city_startdate
+ON projects(site_city, start_date);
+Justification for Column Order
+
+The order of columns in a composite index is critical.
+
+site_city was placed first because it is used in the WHERE clause for filtering.
+
+start_date was placed second because the results are sorted using ORDER BY start_date.
+
+MySQL uses composite indexes from left to right.
+
+By placing site_city first, the database can efficiently narrow down the rows.
+
+Since start_date is the second column, MySQL can also use the same index to sort without performing an additional filesort operation.
+
+This improves both filtering and sorting performance.
+
+Performance Verification
+
+The following query was tested:
+
+EXPLAIN 
+SELECT * 
+FROM projects
+WHERE site_city = 'Kigali'
+ORDER BY start_date;
+
+The execution plan confirmed:
+
+The index idx_projects_city_startdate was used
+
+No full table scan occurred
+
+Sorting was optimized without using filesort
+
+Challenges Faced
+
+Environment Setup Issue
+Initially, the database was not available locally because it had been created on a teammate’s machine. This required requesting the original schema setup file and configuring MySQL locally.
+
+Understanding EXPLAIN Output
+Interpreting the meaning of type, rows, and key required careful analysis to confirm performance improvements.
+
+Composite Index Column Order
+Determining the correct order of columns in the composite index required understanding MySQL’s left-to-right index rule.
