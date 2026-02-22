@@ -1,14 +1,19 @@
-Module 1: Indexes (The "Need for Speed")
-Client Request
+# Module 1: Indexes (The "Need for Speed")
 
-The project managers reported that searching for workers by last name and filtering projects by city was slow. The goal was to optimize these frequent queries to improve application performance.
+## **Client Request**
 
-Part 1A – Simple Index on workers(last_name)
+The project managers reported that **searching for workers by last name** and **filtering projects by city** was slow.  
+The goal was to **optimize these frequent queries** to improve application performance.
 
-Analysis (Before Index)
+---
+
+## **Part 1A – Simple Index on `workers(last_name)`**
+
+### **Analysis (Before Index)**
 
 To evaluate performance, the following query was analyzed:
 
+```sql
 EXPLAIN SELECT * FROM workers WHERE last_name = 'Johnson';
 
 Before creating the index:
@@ -26,7 +31,6 @@ Implementation
 To optimize this, the following index was created:
 
 CREATE INDEX idx_worker_lastname ON workers(last_name);
-
 Verification (After Index)
 
 After creating the index, the EXPLAIN query was run again:
@@ -44,7 +48,6 @@ rows: significantly decreased
 This confirms that MySQL is now using the index instead of performing a full table scan.
 
 Part 1B – Challenge: Composite Index on projects
-
 Business Requirement
 
 The client frequently runs queries that:
@@ -56,11 +59,8 @@ Sort results by start_date
 Typical query:
 
 SELECT * FROM projects WHERE site_city = 'Kigali' ORDER BY start_date;
-
 Solution Implemented
-
 CREATE INDEX idx_projects_city_startdate ON projects(site_city, start_date);
-
 Justification for Column Order
 
 site_city was placed first because it is used in the WHERE clause for filtering.
@@ -90,8 +90,12 @@ Sorting was optimized without using filesort
 
 Challenges Faced
 
-Environment Setup Issue: Initially, the database was not available locally because it had been created on a teammate’s machine. This required requesting the original schema setup file and configuring MySQL locally.
+Environment Setup Issue:
+Initially, the database was not available locally because it had been created on a teammate’s machine.
+This required requesting the original schema setup file and configuring MySQL locally.
 
-Understanding EXPLAIN Output: Interpreting the meaning of type, rows, and key required careful analysis to confirm performance improvements.
+Understanding EXPLAIN Output:
+Interpreting the meaning of type, rows, and key required careful analysis to confirm performance improvements.
 
-Composite Index Column Order: Determining the correct order of columns in the composite index required understanding MySQL’s left-to-right index rule.
+Composite Index Column Order:
+Determining the correct order of columns in the composite index required understanding MySQL’s left-to-right index rule.
