@@ -45,16 +45,17 @@ Big3 Construction has transitioned from basic data storage to a refined system f
 ## Team Contribution Statement
 
 
-- **[Member Name 1]**: [Contributed to Modules X, Y, Z]
-- **[Member Name 2]**: [Contributed to Modules A, B, C]
-- **[Member Name 3]**: [Contributed to Modules D, E, F]
-- **[Member Name 4]**: [Contributed to Modules D, E, F]
+- Ojotule King Attah: Contributed to Modules 1 and 2
+- Joshua Ochel Mugisha: Contributed to Modules 3 and 4
+- Larissa Noella Shimirwa : Contributed to Modules 5 and 6
+- Sarah Kasande : Contributed to Readme.md files and Documentation
 
 ---
 
 ## Documentation of Individual Contributions
 The official PDF documentation of individual contributions can be found here:
-[Individual_Contributions.pdf](./Individual_Contributions.pdf)
+https://docs.google.com/spreadsheets/d/1A8OKk1LbAGbaP3xixIfY9Jdlf7uH3ZMWHqRsP318cNA/edit?gid=0#gid=0
+
 
 ---
 
